@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Roy Notes V1</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+  <style>
+    :root {
+      --bg-main: #18191c;
+      --bg-note: #222327;
+      --text-main: #f3f3f3;
+      --text-secondary: #a1a1a6;
+      --accent-orange: #ff8200;
+      --accent-yellow: #ffe066;
+      --accent-blue: #3fd2ff;
+      --accent-green: #eaffd0;
+      --note-border-radius: 18px;
+      --note-padding: 22px 18px 16px 18px;
+      --note-gap: 18px;
+      --header-height: 60px;
+      --header-padding: 24px 18px 8px 18px;
+      --font-main: 'Inter', 'Segoe UI', Arial, sans-serif;
+      --note-title-size: 1.25rem;
+      --note-date-size: 1rem;
+      --note-content-size: 1rem;
+      --fab-size: 65px;
+      --shadow: 0 4px 18px 0 rgba(0,0,0,0.12);
+      --colorbox-size: 160px;
+      --colorbox-gap: 12px;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+    }
+    #app {
+      width: 100vw;
+      min-height: 100vh;
+      background: var(--bg-main);
+      position: relative;
+      box-shadow: 0 0 8px #0003;
+      margin: 0;
+      max-width: 100vw;
+    }
+    /* Header, Search, Filters, Notes Grid, FAB, Modal... (same as before) */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      height: var(--header-height);
+      padding: var(--header-padding);
+      gap: 13px;
+      transition: all 0.2s;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #232323;
+      margin-right: 7px;
+      flex-shrink: 0;
+    }
+    .greeting {
+      flex: 1;
+      font-weight: 400;
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+    }
+    .greeting .username {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    .top-bar-icons {
+      display: flex;
+      gap: 10px;
+    }
+    .header-divider {
+      border: none;
+      border-top: 1px solid #292929;
+      margin: 0 0 12px 0;
+    }
+    .search-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: var(--header-padding);
+      background: var(--bg-main);
+    }
+    .search-bar.active {
+      display: flex;
+      animation: fadeIn 0.18s;
+    }
+    .search-input {
+      flex: 1;
+      background: #232325;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.07rem;
+      padding: 11px 18px;
+      color: var(--text-main);
+      outline: none;
+      box-shadow: var(--shadow);
+    }
+    .icon-btn.close-search {
+      color: var(--text-main);
+      font-size: 1.45rem;
+      margin-left: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 7px;
+    }
+    .filters-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 0 13px 10px 13px;
+    }
+    .filter-btn {
+      background: #232325;
+      color: var(--text-secondary);
+      border: none;
+      border-radius: 18px;
+      padding: 8px 16px 8px 16px;
+      font-size: 1.01rem;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, color 0.15s;
+      outline: none;
+      cursor: pointer;
+    }
+    .filter-btn.active, .filter-btn:active {
+      background: var(--accent-orange);
+      color: #fff;
+      font-weight: 600;
+    }
+    .notes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--note-gap);
+      padding: 0 13px 100px 13px;
+      transition: all 0.2s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .notes-grid.list-view {
+      display: flex;
+      flex-direction: column;
+      gap: var(--note-gap);
+      padding: 0 13px 100px 13px;
+    }
+    .note-card {
+      background: var(--bg-note);
+      border-radius: var(--note-border-radius);
+      padding: var(--note-padding);
+      box-shadow: var(--shadow);
+      margin-bottom: 0;
+      min-height: 165px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.18s, box-shadow 0.15s;
+      width: 100%;
+      box-sizing: border-box;
+      position: relative;
+    }
+    .notes-grid.list-view .note-card {
+      min-height: 100px;
+    }
+    .note-card.orange { border-bottom: 3px solid var(--accent-orange);}
+    .note-card.yellow { border-bottom: 3px solid var(--accent-yellow);}
+    .note-card.blue   { border-bottom: 3px solid var(--accent-blue);}
+    .note-card.green  { border-bottom: 3px solid var(--accent-green);}
+    .note-title {
+      font-size: var(--note-title-size);
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 7px;
+      line-height: 1.23;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: left;
+    }
+    .note-content {
+      color: var(--text-secondary);
+      font-size: var(--note-content-size);
+      font-weight: 400;
+      line-height: 1.32;
+      margin-bottom: 11px;
+      max-height: 38px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: left;
+    }
+    .note-date {
+      color: var(--text-secondary);
+      font-size: var(--note-date-size);
+      font-weight: 400;
+      text-align: left;
+      margin-top: 2px;
+    }
+    .note-icons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1;
+    }
+    .note-icon-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      opacity: 0.86;
+      font-size: 1.18rem;
+      cursor: pointer;
+      border-radius: 50%;
+      padding: 2px 6px;
+      transition: background 0.14s, color 0.14s;
+    }
+    .note-icon-btn:active {
+      background: #232323;
+      color: #ff8200;
+    }
+    .note-icon-btn.pinned {
+      color: var(--accent-orange);
+      opacity: 1;
+    }
+    .note-icon-btn.delete-btn {
+      color: #f06262;
+      opacity: 0.94;
+      margin-left: 4px;
+    }
+    .fab {
+      position: fixed;
+      right: 30px;
+      bottom: 30px;
+      background: var(--accent-orange);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: var(--fab-size);
+      height: var(--fab-size);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 24px 0 #0003;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    .fab:active { background: #ff9800; }
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.26rem;
+      cursor: pointer;
+      border-radius: 50%;
+      padding: 7px;
+      transition: background 0.14s;
+    }
+    .icon-btn:active {
+      background: #282828;
+    }
+    .notes-grid > * {
+      min-width: 0;
+    }
+    /* Note Modal */
+    .note-modal,
+    .overlay {
+      display: none;
+    }
+    .note-modal.open,
+    .overlay.open {
+      display: block;
+    }
+    .note-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100vw; height: 100vh;
+      background: var(--bg-main);
+      z-index: 99;
+      animation: fadeIn 0.18s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0;}
+      to   { opacity: 1;}
+    }
+    .note-modal-content {
+      padding: 18px 18px 0 18px;
+      max-width: 540px;
+      margin: 10px;
+      box-sizing: border-box;
+      height: calc(100vh - 20px);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main);
+      border-radius: 15px;
+      position: relative;
+    }
+    .note-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .note-modal-header .modal-actions {
+      display: flex;
+      gap: 15px;
+      position: relative;
+    }
+    .note-modal-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 2px;
+    }
+    .note-modal-date {
+      color: var(--text-secondary);
+      font-size: 0.97rem;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .note-modal-title {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+      outline: none;
+      width: 100%;
+      padding: 3px 0 3px 0;
+      text-align: left;
+    }
+    .note-modal-title::placeholder {
+      color: #62626c;
+      opacity: 1;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    .note-modal-text {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      font-weight: 400;
+      line-height: 1.35;
+      flex: 1;
+      resize: none;
+      outline: none;
+      margin-top: 6px;
+      padding: 0;
+      min-height: 120px;
+      text-align: left;
+    }
+    .note-modal-text::placeholder {
+      color: #62626c;
+      opacity: 1;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #0007;
+      z-index: 98;
+    }
+    /* Color picker box */
+    .colorbox-popup {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background: #222327;
+      padding: 13px 13px 18px 13px;
+      border-radius: 13px;
+      box-shadow: 0 4px 18px 0 rgba(0,0,0,0.19);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 100;
+      min-width: 195px;
+      animation: fadeIn 0.15s;
+      align-items: center;
+    }
+    .colorbox-canvas-wrap {
+      position: relative;
+      width: var(--colorbox-size);
+      height: var(--colorbox-size);
+      margin-bottom: 10px;
+    }
+    .colorbox-canvas {
+      border-radius: 10px;
+      width: var(--colorbox-size);
+      height: var(--colorbox-size);
+      box-shadow: 0 1px 8px #0001;
+      background: #fff;
+      cursor: crosshair;
+      display: block;
+    }
+    .colorbox-dragger {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border: 2.5px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 7px #0003;
+      pointer-events: none;
+      transform: translate(-11px, -11px);
+    }
+    .colorbox-code-preview {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      font-size: 1.04rem;
+      font-family: monospace;
+      color: #fff;
+      user-select: text;
+      cursor: pointer;
+    }
+    .colorbox-preview-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: var(--bg-note);
+      box-shadow: 0 1px 4px #0003;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .colorbox-code-demo {
+      font-weight: 600;
+      font-size: 1.09rem;
+      margin-left: 1px;
+    }
+    .colorbox-rgba-demo {
+      background: #232323;
+      border-radius: 5px;
+      padding: 2px 4px;
+      margin-left: 8px;
+      color: #ffe066;
+      font-size: 0.97rem;
+    }
+    .colorbox-label {
+      color: #ffe066;
+      font-size: 0.93rem;
+      margin-bottom: 3px;
+      font-family: monospace;
+      opacity: 0.8;
+      text-align: center;
+    }
+    @media (max-width: 800px) {
+      #app, .note-modal-content {
+        max-width: 100vw;
+        padding: 0;
+      }
+      .fab {
+        right: 18px;
+        bottom: 22px;
+      }
+      .notes-grid {
+        padding: 0 6px 100px 6px;
+        gap: 11px;
+      }
+    }
+    @media (max-width: 500px) {
+      .note-modal-content {
+        padding: 8px 2vw 0 2vw;
+        margin: 10px;
+      }
+      .filters-row {
+        padding-left: 3vw;
+        padding-right: 3vw;
+      }
+      .notes-grid, .notes-grid.list-view {
+        padding-left: 3vw;
+        padding-right: 3vw;
+      }
+      .colorbox-popup {
+        min-width: 145px;
+        padding: 10px 5px 14px 5px;
+      }
+      .colorbox-canvas-wrap {
+        width: 120px;
+        height: 120px;
+      }
+      .colorbox-canvas {
+        width: 120px;
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="top-bar" id="main-header">
+   <div class="avatar">
+  <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Avatar" style="width:40px;height:40px;border-radius:50%;">
+</div>
+<div class="greeting">
+  <span id="greeting-text"></span> <span class="username">Shozon</span>
+</div>
+<script>
+  function getGreeting() {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour >= 5 && hour < 12) return "Morning,";
+    if (hour >= 12 && hour < 18) return "Evening,";
+    return "Goodnight,";
+  }
+  document.getElementById('greeting-text').textContent = getGreeting();
+</script>
+      <div class="top-bar-icons">
+        <button class="icon-btn" id="search-btn" tabindex="-1" aria-label="Search"><i class="bi bi-search"></i></button>
+        <button class="icon-btn" id="settings-btn" tabindex="-1" aria-label="Settings"><i class="bi bi-gear"></i></button>
+      </div>
+    </header>
+    <!-- Search bar overlay -->
+    <div class="search-bar" id="search-bar">
+      <input class="search-input" id="search-input" type="text" placeholder="Search notes by title or content..." />
+      <button class="icon-btn close-search" id="close-search-btn" title="Close Search"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <hr class="header-divider" />
+    <!-- Filters -->
+    <div class="filters-row">
+      <button class="filter-btn" id="sort-name">Name <i class="bi bi-arrow-down-up"></i></button>
+      <button class="filter-btn active" id="sort-date">Date <i class="bi bi-arrow-down"></i></button>
+      <button class="filter-btn" id="grid-toggle"><span id="grid-list-label">Grid</span> <i class="bi bi-grid-3x3-gap" id="grid-list-icon"></i></button>
+    </div>
+    <!-- Notes Grid -->
+    <main class="notes-grid" id="notes-grid"></main>
+    <!-- Floating Action Button -->
+    <button class="fab" id="add-note-btn" aria-label="Add note"><i class="bi bi-plus"></i></button>
+  </div>
+  <!-- Note Detail Modal -->
+  <div class="note-modal" id="note-modal" aria-modal="true" role="dialog">
+    <div class="note-modal-content" id="modal-content-wrap">
+      <div class="note-modal-header">
+        <button class="icon-btn" id="back-btn" aria-label="Back"><i class="bi bi-arrow-left"></i></button>
+        <div class="modal-actions" style="position:relative;">
+          <button class="icon-btn pin-btn" id="modal-pin-btn" tabindex="-1"><i class="bi bi-pin"></i></button>
+          <button class="icon-btn" tabindex="-1" id="modal-color-btn"><i class="bi bi-palette"></i></button>
+          <button class="icon-btn" tabindex="-1"><i class="bi bi-share"></i></button>
+          <button class="icon-btn delete-btn" id="modal-delete-btn" aria-label="Delete"><i class="bi bi-trash"></i></button>
+          <div id="colorbox-popup" style="display:none;position:absolute;top:36px;right:40px;"></div>
+        </div>
+      </div>
+      <div class="note-modal-body">
+        <div class="note-modal-date" id="modal-date"></div>
+        <input class="note-modal-title" id="modal-title" maxlength="70" placeholder="Title (e.g. Grocery list, Project ideas)" autocomplete="off" />
+        <textarea class="note-modal-text" id="modal-content" placeholder="Write your note here (e.g. Buy eggs, brainstorm features)" maxlength="2048"></textarea>
+      </div>
+    </div>
+  </div>
+  <!-- Overlay for modal -->
+  <div id="overlay" class="overlay"></div>
+  <script>
+    // Accent colors for note cards
+    const ACCENTS = ['orange', 'yellow', 'blue', 'green'];
+    function getNotes() {
+      const notes = localStorage.getItem('notes');
+      return notes ? JSON.parse(notes) : [];
+    }
+    function saveNotes(notes) {
+      localStorage.setItem('notes', JSON.stringify(notes));
+    }
+    function escapeHTML(s) {
+      return (s||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+    }
+    function truncate(str, n) {
+      return str.length > n ? str.slice(0, n-1) + '…' : str;
+    }
+    // Search
+    let searchActive = false;
+    let searchQuery = "";
+    const searchBtn = document.getElementById('search-btn');
+    const searchBar = document.getElementById('search-bar');
+    const mainHeader = document.getElementById('main-header');
+    const searchInput = document.getElementById('search-input');
+    const closeSearchBtn = document.getElementById('close-search-btn');
+    searchBtn.onclick = () => {
+      mainHeader.style.display = 'none';
+      searchBar.classList.add('active');
+      searchActive = true;
+      setTimeout(() => searchInput.focus(), 50);
+    };
+    closeSearchBtn.onclick = () => {
+      mainHeader.style.display = '';
+      searchBar.classList.remove('active');
+      searchActive = false;
+      searchInput.value = '';
+      searchQuery = '';
+      renderNotes(currentSortBy);
+    };
+    searchInput.addEventListener('input', function() {
+      searchQuery = this.value || "";
+      renderNotes(currentSortBy);
+    });
+    // Rendering notes grid or list
+    let viewMode = localStorage.getItem('notesViewMode') || 'grid';
+    function renderNotes(sortBy = 'date') {
+      let notes = getNotes();
+      if (searchActive && searchQuery.trim() !== "") {
+        const q = searchQuery.trim().toLowerCase();
+        notes = notes.filter(note =>
+          (note.title || '').toLowerCase().includes(q) ||
+          (note.content || '').toLowerCase().includes(q)
+        );
+      }
+      notes.sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        if (sortBy === 'name') {
+          return (a.title || '').localeCompare(b.title || '');
+        } else {
+          return new Date(b.date) - new Date(a.date);
+        }
+      });
+      const notesGrid = document.getElementById('notes-grid');
+      notesGrid.innerHTML = '';
+      notesGrid.classList.toggle('list-view', viewMode === 'list');
+      notes.forEach((note, idx) => {
+        let accent = note.accent ? note.accent : ACCENTS[idx % ACCENTS.length];
+        let noteBg = note.bgColor ? note.bgColor : 'var(--bg-note)';
+        const card = document.createElement('div');
+        card.className = `note-card ${accent ? accent : ''}`;
+        card.tabIndex = 0;
+        card.style.background = noteBg;
+        card.innerHTML = `
+          <div class="note-title" style="text-align:left">${note.title ? escapeHTML(note.title) : '<span style="opacity:.7;font-weight:400;">Untitled</span>'}</div>
+          <div class="note-content" style="text-align:left">${note.content ? escapeHTML(truncate(note.content, 70)) : '<span style="opacity:.6;">No description</span>'}</div>
+          <span class="note-date" style="text-align:left">${note.date}</span>
+        `;
+        // Icons (pin, delete)
+        const iconsDiv = document.createElement('div');
+        iconsDiv.className = 'note-icons';
+        // Pin icon
+        const pinBtn = document.createElement('button');
+        pinBtn.className = 'note-icon-btn pin-btn' + (note.pinned ? ' pinned' : '');
+        pinBtn.innerHTML = '<i class="bi bi-pin"></i>';
+        pinBtn.title = note.pinned ? 'Unpin' : 'Pin';
+        pinBtn.onclick = e => {
+          e.stopPropagation();
+          const notesArr = getNotes();
+          notesArr[idx].pinned = !notesArr[idx].pinned;
+          saveNotes(notesArr);
+          renderNotes(sortBy);
+        };
+        // Delete icon
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'note-icon-btn delete-btn';
+        deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
+        deleteBtn.title = "Delete";
+        deleteBtn.onclick = e => {
+          e.stopPropagation();
+          const notesArr = getNotes();
+          notesArr.splice(idx, 1);
+          saveNotes(notesArr);
+          renderNotes(sortBy);
+        };
+        iconsDiv.appendChild(pinBtn);
+        iconsDiv.appendChild(deleteBtn);
+        card.appendChild(iconsDiv);
+        card.addEventListener('click', () => openModal(idx));
+        notesGrid.appendChild(card);
+      });
+    }
+    // Modal logic
+    const modal = document.getElementById('note-modal');
+    const overlay = document.getElementById('overlay');
+    let currentNoteIdx = null;
+    function openModal(idx) {
+      const notes = getNotes();
+      currentNoteIdx = idx;
+      const note = notes[idx];
+      document.getElementById('modal-date').textContent = note.date;
+      document.getElementById('modal-title').value = note.title || '';
+      document.getElementById('modal-content').value = note.content || '';
+      // Pin style
+      const pinBtn = document.getElementById('modal-pin-btn');
+      pinBtn.classList.toggle('pinned', !!note.pinned);
+      pinBtn.title = note.pinned ? 'Unpin' : 'Pin';
+      // Color style
+      const modalContentWrap = document.getElementById('modal-content-wrap');
+      modalContentWrap.style.background = note.bgColor ? note.bgColor : 'var(--bg-main)';
+      modal.classList.add('open');
+      overlay.classList.add('open');
+      setTimeout(()=>document.getElementById('modal-title').focus(), 80);
+    }
+    function closeModal() {
+      modal.classList.remove('open');
+      overlay.classList.remove('open');
+      closeColorBox();
+      currentNoteIdx = null;
+    }
+    document.getElementById('back-btn').onclick = closeModal;
+    overlay.onclick = closeModal;
+    document.addEventListener('keydown', function(e){
+      if(modal.classList.contains('open') && e.key==='Escape') closeModal();
+    });
+
+    document.getElementById('modal-title').addEventListener('input', function() {
+      if (currentNoteIdx !== null) {
+        const notes = getNotes();
+        notes[currentNoteIdx].title = this.value;
+        saveNotes(notes);
+        renderNotes(currentSortBy);
+      }
+    });
+    document.getElementById('modal-content').addEventListener('input', function() {
+      if (currentNoteIdx !== null) {
+        const notes = getNotes();
+        notes[currentNoteIdx].content = this.value;
+        saveNotes(notes);
+        renderNotes(currentSortBy);
+      }
+    });
+    document.getElementById('modal-pin-btn').onclick = function() {
+      if (currentNoteIdx !== null) {
+        const notes = getNotes();
+        notes[currentNoteIdx].pinned = !notes[currentNoteIdx].pinned;
+        saveNotes(notes);
+        document.getElementById('modal-pin-btn').classList.toggle('pinned', !!notes[currentNoteIdx].pinned);
+        renderNotes(currentSortBy);
+      }
+    };
+    document.getElementById('modal-delete-btn').onclick = function() {
+      if (currentNoteIdx !== null) {
+        const notes = getNotes();
+        notes.splice(currentNoteIdx, 1);
+        saveNotes(notes);
+        closeModal();
+        renderNotes(currentSortBy);
+      }
+    };
+
+    // --- Color Picker in Modal ---
+    const colorBtn = document.getElementById('modal-color-btn');
+    const colorBoxPopup = document.getElementById('colorbox-popup');
+    let colorBoxOpen = false;
+    let colorDrag = false;
+    let colorCanvas, colorCtx, colorDragger, colorPreview, colorHex, colorRGBA, colorBoxWrap, colorLabel, colorRgbaDemo;
+    let colorBoxSize = 160;
+    let currentColor = {r:34, g:35, b:39, a:1};
+    function toHex(r,g,b){
+      return "#" + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+    }
+    function toRgbaStr(r,g,b,a=1) {
+      return `rgba(${r},${g},${b},${Math.round(a*100)/100})`;
+    }
+    function hexToRgba(hex) {
+      hex = hex.replace(/^#/, "");
+      if (hex.length === 3) hex = hex.split("").map(x => x + x).join("");
+      const num = parseInt(hex, 16);
+      return { r: (num>>16)&255, g: (num>>8)&255, b: num&255, a:1 };
+    }
+    colorBtn.onclick = function(e) {
+      e.stopPropagation();
+      if (colorBoxOpen) {
+        closeColorBox();
+      } else {
+        openColorBox();
+      }
+    };
+    function openColorBox() {
+      colorBoxPopup.innerHTML = '';
+      colorBoxPopup.style.display = 'flex';
+      colorBoxOpen = true;
+      colorBoxSize = window.innerWidth < 500 ? 120 : 160;
+      // Label
+      colorLabel = document.createElement('div');
+      colorLabel.className = 'colorbox-label';
+      colorLabel.textContent = 'Select note color';
+      colorBoxPopup.appendChild(colorLabel);
+      // Canvas
+      colorBoxWrap = document.createElement('div');
+      colorBoxWrap.className = 'colorbox-canvas-wrap';
+      colorBoxWrap.style.width = colorBoxSize + 'px';
+      colorBoxWrap.style.height = colorBoxSize + 'px';
+      colorCanvas = document.createElement('canvas');
+      colorCanvas.width = colorBoxSize;
+      colorCanvas.height = colorBoxSize;
+      colorCanvas.className = "colorbox-canvas";
+      colorCtx = colorCanvas.getContext('2d');
+      colorDragger = document.createElement('div');
+      colorDragger.className = 'colorbox-dragger';
+      colorBoxWrap.appendChild(colorCanvas);
+      colorBoxWrap.appendChild(colorDragger);
+      colorBoxPopup.appendChild(colorBoxWrap);
+      // Preview
+      colorPreview = document.createElement('div');
+      colorPreview.className = 'colorbox-code-preview';
+      colorPreview.innerHTML = `
+        <span class="colorbox-preview-swatch"></span>
+        <span class="colorbox-code-demo"></span>
+        <span class="colorbox-rgba-demo"></span>
+      `;
+      colorBoxPopup.appendChild(colorPreview);
+
+      // Initial color: current note color or fallback
+      let notes = getNotes();
+      let note = notes[currentNoteIdx];
+      let curColor = note.bgColor || '#222327';
+      let rgba = hexToRgba(curColor);
+      if (note.bgColor && note.bgColor.startsWith("rgba")) {
+        let m = note.bgColor.match(/rgba\((\d+),(\d+),(\d+),([\d.]+)\)/);
+        if (m) rgba = {r:+m[1],g:+m[2],b:+m[3],a:+m[4]};
+      }
+      currentColor = rgba;
+      drawColorPicker(rgba);
+      setColorPicker(rgba);
+      colorCanvas.addEventListener('mousedown', colorPointerDown);
+      colorCanvas.addEventListener('touchstart', colorPointerDown, {passive:false});
+      // Close on outside click
+      setTimeout(() => {
+        window.addEventListener('click', closeColorBox, { once: true });
+      }, 0);
+    }
+    function closeColorBox() {
+      if (colorBoxPopup) colorBoxPopup.style.display = 'none';
+      colorBoxOpen = false;
+    }
+    function drawColorPicker(selected) {
+      if (!colorCtx) return;
+      for (let y = 0; y < colorBoxSize; y++) {
+        let light = 1 - y/(colorBoxSize-1);
+        for (let x = 0; x < colorBoxSize; x++) {
+          let hue = x/(colorBoxSize-1);
+          let rgb = hslToRgb(hue, 0.7, 0.5*light+0.25);
+          colorCtx.fillStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+          colorCtx.fillRect(x, y, 1, 1);
+        }
+      }
+      // If coming from rgba, place dragger close to that color
+      let pos = colorToPos(selected||{r:34,g:35,b:39,a:1});
+      updateDragger(pos.x, pos.y);
+      updateColorPreview(selected);
+    }
+    function setColorPicker(rgba) {
+      updateDragger(...Object.values(colorToPos(rgba)));
+      updateColorPreview(rgba);
+    }
+    function colorPointerDown(ev) {
+      ev.preventDefault();
+      colorDrag = true;
+      colorPointerMove(ev);
+      document.addEventListener('mousemove', colorPointerMove);
+      document.addEventListener('mouseup', colorPointerUp);
+      document.addEventListener('touchmove', colorPointerMove, {passive:false});
+      document.addEventListener('touchend', colorPointerUp);
+    }
+    function colorPointerMove(ev) {
+      let rect = colorCanvas.getBoundingClientRect();
+      let x, y;
+      if (ev.touches && ev.touches.length) {
+        x = ev.touches[0].clientX - rect.left;
+        y = ev.touches[0].clientY - rect.top;
+      } else {
+        x = ev.clientX - rect.left;
+        y = ev.clientY - rect.top;
+      }
+      x = Math.max(0, Math.min(colorBoxSize-1, x));
+      y = Math.max(0, Math.min(colorBoxSize-1, y));
+      updateDragger(x, y);
+      let rgb = getColorAt(x, y);
+      updateColorPreview(rgb);
+      if (colorDrag) {
+        // update note color live
+        let rgbaStr = toRgbaStr(rgb.r, rgb.g, rgb.b, 1);
+        let notes = getNotes();
+        if (notes[currentNoteIdx]) {
+          notes[currentNoteIdx].bgColor = rgbaStr;
+          saveNotes(notes);
+          document.getElementById('modal-content-wrap').style.background = rgbaStr;
+          renderNotes(currentSortBy);
+        }
+      }
+    }
+    function colorPointerUp(ev) {
+      colorDrag = false;
+      document.removeEventListener('mousemove', colorPointerMove);
+      document.removeEventListener('mouseup', colorPointerUp);
+      document.removeEventListener('touchmove', colorPointerMove);
+      document.removeEventListener('touchend', colorPointerUp);
+    }
+    function updateDragger(x, y) {
+      if (!colorDragger) return;
+      colorDragger.style.left = x + 'px';
+      colorDragger.style.top  = y + 'px';
+    }
+    function updateColorPreview(rgb) {
+      let hex = toHex(rgb.r, rgb.g, rgb.b);
+      let rgbaStr = toRgbaStr(rgb.r, rgb.g, rgb.b, 1);
+      colorPreview.querySelector('.colorbox-preview-swatch').style.background = rgbaStr;
+      colorPreview.querySelector('.colorbox-code-demo').textContent = hex;
+      colorPreview.querySelector('.colorbox-rgba-demo').textContent = rgbaStr;
+      // Click to copy
+      colorPreview.onclick = () => {
+        navigator.clipboard.writeText(rgbaStr);
+      }
+    }
+    function getColorAt(x, y) {
+      // Map x to hue, y to lightness
+      let hue = x/(colorBoxSize-1);
+      let light = 1 - y/(colorBoxSize-1);
+      let rgb = hslToRgb(hue, 0.7, 0.5*light+0.25);
+      return { r: rgb[0], g: rgb[1], b: rgb[2], a: 1 };
+    }
+    function colorToPos(rgb) {
+      // Approximate: search colorbox for closest color
+      let minDist = 1e6, minX = 0, minY = 0;
+      for (let y = 0; y < colorBoxSize; y += 8) {
+        let light = 1 - y/(colorBoxSize-1);
+        for (let x = 0; x < colorBoxSize; x += 8) {
+          let hue = x/(colorBoxSize-1);
+          let c = hslToRgb(hue, 0.7, 0.5*light+0.25);
+          let d = Math.abs(rgb.r-c[0])+Math.abs(rgb.g-c[1])+Math.abs(rgb.b-c[2]);
+          if (d < minDist) { minDist = d; minX = x; minY = y; }
+        }
+      }
+      return { x: minX, y: minY };
+    }
+    // HSL to RGB
+    function hslToRgb(h, s, l){
+      let r, g, b;
+      if(s === 0){
+          r = g = b = l;
+      }else{
+          function hue2rgb(p, q, t){
+              if(t < 0) t += 1;
+              if(t > 1) t -= 1;
+              if(t < 1/6) return p + (q - p) * 6 * t;
+              if(t < 1/2) return q;
+              if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+              return p;
+          }
+          let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+          let p = 2 * l - q;
+          r = hue2rgb(p, q, h + 1/3);
+          g = hue2rgb(p, q, h);
+          b = hue2rgb(p, q, h - 1/3);
+      }
+      return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+    }
+
+    // Add note
+    document.getElementById('add-note-btn').onclick = function() {
+      const notes = getNotes();
+      const date = new Date().toLocaleDateString('en-US', {month:'short', day:'2-digit', year:'numeric'});
+      notes.unshift({title:'', content:'', date, pinned: false, bgColor: '', accent: ''});
+      saveNotes(notes);
+      renderNotes(currentSortBy);
+      openModal(0);
+    };
+    // Sorting
+    let currentSortBy = 'date';
+    document.getElementById('sort-date').onclick = function() {
+      currentSortBy = 'date';
+      this.classList.add('active');
+      document.getElementById('sort-name').classList.remove('active');
+      renderNotes('date');
+    };
+    document.getElementById('sort-name').onclick = function() {
+      currentSortBy = 'name';
+      this.classList.add('active');
+      document.getElementById('sort-date').classList.remove('active');
+      renderNotes('name');
+    };
+    // Grid/List toggle
+    function updateGridListButton() {
+      const label = document.getElementById('grid-list-label');
+      const icon = document.getElementById('grid-list-icon');
+      if (viewMode === 'grid') {
+        label.textContent = 'List';
+        icon.className = 'bi bi-list';
+      } else {
+        label.textContent = 'Grid';
+        icon.className = 'bi bi-grid-3x3-gap';
+      }
+    }
+    document.getElementById('grid-toggle').onclick = function() {
+      viewMode = (viewMode === 'grid') ? 'list' : 'grid';
+      localStorage.setItem('notesViewMode', viewMode);
+      updateGridListButton();
+      renderNotes(currentSortBy);
+    };
+    updateGridListButton();
+    // Initial render
+    renderNotes();
+  </script>
+</body>
+</html>
